@@ -1,97 +1,58 @@
-// package ch.cern.todo.service;
+package ch.cern.todo.service;
 
-// import ch.cern.todo.model.User; // Assuming you have a User model
-// import ch.cern.todo.repository.UserRepository; // Assuming you have a UserRepository
-// import org.springframework.stereotype.Service;
-// import org.springframework.transaction.annotation.Transactional;
+import ch.cern.todo.config.SecurityConfig;
+import ch.cern.todo.model.User;
+import ch.cern.todo.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-// import java.util.List;
+import java.util.List;
+import java.util.Optional;
 
-// import ch.cern.todo.exception.ResourceNotFoundException;
+@Service
+@Transactional
+public class UserService { // Removed @Transactional - manage transactions explicitly
 
-// /**
-//  * Service class for managing User entities.
-//  */
-// @Service
-// @Transactional
-// public class UserService {
-//     private final UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final SecurityConfig securityConfig;
 
-//     public UserService(UserRepository userRepository) {
-//         this.userRepository = userRepository;
-//     }
 
-//     /**
-//      * Creates a new User.
-//      *
-//      * @param user the User to create
-//      * @return the created User
-//      */
-//     public User createUser(User user) {
-//         validateUser(user);
-//         return userRepository.save(user);
-//     }
+    public UserService(UserRepository userRepository, SecurityConfig securityConfig) {
+        this.userRepository = userRepository;
+        this.securityConfig = securityConfig;
+       // this.passwordEncoder = passwordEncoder;
+    }
 
-//     /**
-//      * Retrieves a User by its ID.
-//      *
-//      * @param id the ID of the User
-//      * @return the User if found
-//      */
-//     public User getUserById(Long id) {
-//         return userRepository.findById(id)
-//                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
-//     }
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
-//     /**
-//      * Retrieves all Users.
-//      *
-//      * @return a list of all Users
-//      */
-//     public List<User> getAllUsers() {
-//         return userRepository.findAll();
-//     }
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
 
-//     /**
-//      * Updates an existing User.
-//      *
-//      * @param id   the ID of the User to update
-//      * @param user the updated User data
-//      * @return the updated User
-//      */
-//     public User updateUser(Long id, User user) {
-//         if (!userRepository.existsById(id)) {
-//             throw new ResourceNotFoundException("User not found with ID: " + id);
-//         }
-//         validateUser(user);
-//         user.setId(id);
-//         return userRepository.save(user);
-//     }
+    public User createUser(User user) {
+        // Encode the password before saving
+        PasswordEncoder passwordEncoder = securityConfig.passwordEncoder();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
 
-//     /**
-//      * Deletes a User by its ID.
-//      *
-//      * @param id the ID of the User to delete
-//      */
-//     public void deleteUser(Long id) {
-//         if (!userRepository.existsById(id)) {
-//             throw new ResourceNotFoundException("User not found with ID: " + id);
-//         }
-//         userRepository.deleteById(id);
-//     }
+    public Optional<User> updateUser(Long id, User updatedUser) {
+        PasswordEncoder passwordEncoder = securityConfig.passwordEncoder();
+        return userRepository.findById(id).map(user -> {
+            //Encode the password before saving. This could be skipped if the password does not change
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            user.setUsername(updatedUser.getUsername());
+            user.setEmail(updatedUser.getEmail());
+            user.setRoleType(updatedUser.getRoleType());
+            return userRepository.save(user);
+        });
+    }
 
-//     /**
-//      * Validates the User data.
-//      *
-//      * @param user the User to validate
-//      */
-//     private void validateUser(User user) {
-//         if (user.getUsername() == null || user.getUsername().isEmpty()) {
-//             throw new IllegalArgumentException("Username must not be empty");
-//         }
-//         if (user.getEmail() == null || user.getEmail().isEmpty()) {
-//             throw new IllegalArgumentException("Email must not be empty");
-//         }
-//         // Add more validations as needed
-//     }
-// } 
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
+}

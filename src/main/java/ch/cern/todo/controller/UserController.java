@@ -1,80 +1,55 @@
-// package ch.cern.todo.controller;
+package ch.cern.todo.controller;
 
-// import ch.cern.todo.model.User;
-// import ch.cern.todo.service.UserService;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.*;
+import ch.cern.todo.model.User;
+import ch.cern.todo.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-// import java.util.List;
+import java.util.List;
+import java.util.Optional;
 
-// /**
-//  * Controller class for managing User entities.
-//  */
-// @RestController
-// @RequestMapping("/api/users")
-// public class UserController {
-//     private final UserService userService;
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
 
-//     public UserController(UserService userService) {
-//         this.userService = userService;
-//     }
+    private final UserService userService;
 
-//     /**
-//      * Creates a new User.
-//      *
-//      * @param user the User to create
-//      * @return ResponseEntity containing the created User
-//      */
-//     @PostMapping
-//     public ResponseEntity<User> createUser(@RequestBody User user) {
-//         User createdUser = userService.createUser(user);
-//         return ResponseEntity.ok(createdUser);
-//     }
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-//     /**
-//      * Updates an existing User.
-//      *
-//      * @param id   the ID of the User to update
-//      * @param user the updated User data
-//      * @return ResponseEntity containing the updated User
-//      */
-//     @PutMapping("/{id}")
-//     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-//         User updatedUser = userService.updateUser(id, user);
-//         return ResponseEntity.ok(updatedUser);
-//     }
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
 
-//     /**
-//      * Deletes a User by its ID.
-//      *
-//      * @param id the ID of the User to delete
-//      * @return ResponseEntity with no content
-//      */
-//     @DeleteMapping("/{id}")
-//     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-//         userService.deleteUser(id);
-//         return ResponseEntity.noContent().build();
-//     }
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        Optional<User> user = userService.getUserById(id);
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 
-//     /**
-//      * Retrieves all Users.
-//      *
-//      * @return ResponseEntity containing a list of all Users
-//      */
-//     @GetMapping
-//     public ResponseEntity<List<User>> getAllUsers() {
-//         List<User> users = userService.getAllUsers();
-//         return ResponseEntity.ok(users);
-//     }
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User createdUser = userService.createUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    }
 
-//     /**
-//      * Retrieves a User by its ID.
-//      *
-//      * @param id the ID of the User
-//      * @return ResponseEntity containing the User if found, or not found status
-//      */
-//     @GetMapping("/{id}")
-//     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-//         return ResponseEntity.ok(userService.getUserById(id));
-//     }
-// } 
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        Optional<User> updated = userService.updateUser(id, updatedUser);
+        return updated.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+}

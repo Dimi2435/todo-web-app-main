@@ -68,6 +68,7 @@ public class SecurityConfig {
     .requestMatchers("/h2-console/**").permitAll()
     //.requestMatchers("/api/tasks/**").authenticated()
     .requestMatchers("/api/tasks/**").hasRole("ADMIN")
+    .requestMatchers("/api/users/**").hasRole("ADMIN")
     // .requestMatchers("/api/users/**").authenticated()
     // .requestMatchers("/api/roles/**").authenticated()
     .requestMatchers("/api/categories/**").hasRole("ADMIN");
@@ -75,7 +76,7 @@ public class SecurityConfig {
     http.headers().frameOptions().disable();
 
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-    //http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));    
+    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));    
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/tasks/**"));
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/categories/**"));
     //http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/roles**"));

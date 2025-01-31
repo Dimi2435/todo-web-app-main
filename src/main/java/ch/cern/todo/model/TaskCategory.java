@@ -16,7 +16,7 @@ public class TaskCategory {
     @Column(name = "CATEGORY_ID")
     private Long id;
 
-    @Column(name = "NAME", nullable = false, unique = false)
+    @Column(name = "NAME", nullable = false, unique = true)
     private String name;
 
     @Column(name = "DESCRIPTION", length = 255, nullable = false)

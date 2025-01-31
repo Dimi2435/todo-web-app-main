@@ -1,4 +1,5 @@
 package ch.cern.todo.model;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ public class Task {
     @Column(name = "TASK_ID")
     private Long id;
 
-    @Column(name = "TASK_NAME", nullable = false, length = 100)
+    @Column(name = "TASK_NAME", nullable = false, length = 100 , unique = true)
     private String name;
 
     @Column(name = "TASK_DESCRIPTION", length = 255, nullable = false)
@@ -22,24 +23,25 @@ public class Task {
     @Column(name = "DEADLINE", nullable = false)
     private LocalDateTime deadline;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // Optimize fetching
+    @ManyToOne(fetch = FetchType.LAZY) // Optimize fetching
     @JoinColumn(name = "CATEGORY_ID", nullable = false)
     private TaskCategory category;
 
-    // @ManyToOne
-    // @JoinColumn(name = "USER_ID", nullable = false)
-    // private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID" , nullable = false) // This is the crucial fix!
+    private User user;
 
     // Default constructor
-    public Task() {}
+    public Task() {
+    }
 
     // Constructor with parameters
-    public Task(String name, String description, LocalDateTime deadline, TaskCategory category) {
+    public Task(String name, String description, LocalDateTime deadline, TaskCategory category,User user) {
         this.name = name;
         this.description = description;
         this.deadline = deadline;
         this.category = category;
-        //this.user = user;
+        this.user = user;
     }
 
     // Getters and Setters
@@ -83,16 +85,21 @@ public class Task {
         this.category = category;
     }
 
-    // public User getUser() {
-    //     return user;
-    // }
-
-    // public void setUser(User user) {
-    //     this.user = user;
-    // }
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
+    }    
 
     // Helper method for combined search (adjust to your specific search needs)
-    public boolean matches(String name, String description, LocalDateTime deadline, TaskCategory category) {
+    // Helper method for combined search (adjust to your specific search needs)
+    public boolean matches(String name, String description, LocalDateTime deadline, TaskCategory category, User user) { // Add
+                                                                                                                        // User
+                                                                                                                        // to
+                                                                                                                        // method
+        // signature
 
         if (name != null && !this.name.contains(name)) {
             return false;
@@ -103,10 +110,17 @@ public class Task {
         if (deadline != null && !this.deadline.isEqual(deadline)) { // Consider using .isEqual() for date comparison
             return false;
         }
-        return category == null || this.category.equals(category); // isEqual vs equals check for TaskCategory depends on your needs. equals checks by id, isEqual compares all fields.
+        if (user != null && !this.user.equals(user)) {
+            return false;
+        }
+        return category == null || this.category.equals(category); // isEqual vs equals check for TaskCategory depends
+                                                                   // on your needs. equals checks by id, isEqual
+                                                                   // compares all fields.
+
     }
 
     // Override toString, equals, and hashCode for better usability
+    // Override toString to include user
     @Override
     public String toString() {
         return "Task{" +
@@ -114,14 +128,17 @@ public class Task {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", deadline=" + deadline +
+                ", user=" + user +
                 '}';
     }
 
     // Override equals and hashCode for proper comparison
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Task)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Task))
+            return false;
         Task task = (Task) o;
         return id != null && id.equals(task.id);
     }

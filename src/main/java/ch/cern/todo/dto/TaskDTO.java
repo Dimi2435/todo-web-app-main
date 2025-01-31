@@ -1,4 +1,5 @@
 package ch.cern.todo.dto;
+
 import java.time.LocalDateTime;
 
 public class TaskDTO {
@@ -7,6 +8,7 @@ public class TaskDTO {
     private String description;
     private LocalDateTime deadline;
     private String categoryName; // Assuming you want to include the category name
+    private String userName; // Assuming you want to include the category name
 
     /// Getter and Setter for id
     public Long getId() {
@@ -51,5 +53,13 @@ public class TaskDTO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
