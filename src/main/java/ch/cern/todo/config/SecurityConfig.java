@@ -67,17 +67,17 @@ public class SecurityConfig {
     .requestMatchers("/swagger-ui/**").permitAll()
     .requestMatchers("/h2-console/**").permitAll()
     .requestMatchers("/api/tasks/**").authenticated()
-    .requestMatchers("/api/users/**").authenticated()
-    .requestMatchers("/api/roles/**").authenticated()
+    // .requestMatchers("/api/users/**").authenticated()
+    // .requestMatchers("/api/roles/**").authenticated()
     .requestMatchers("/api/categories/**").hasRole("ADMIN");
 
     http.headers().frameOptions().disable();
 
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));    
+   // http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));    
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/tasks/**"));
     http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/categories/**"));
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/roles**"));
+   // http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/roles**"));
 
 
     http.formLogin()

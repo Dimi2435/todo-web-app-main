@@ -2,6 +2,8 @@ package ch.cern.todo.repository;
 
 import ch.cern.todo.model.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -37,6 +39,17 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      * @return a list of Tasks with deadlines within the specified range
      */
     List<Task> findByDeadlineBetween(LocalDateTime start, LocalDateTime end);
+
+     @Query("SELECT t FROM Task t " +
+           "WHERE (:name IS NULL OR t.name LIKE %:name%) " +
+           "AND (:description IS NULL OR t.description LIKE %:description%) " +
+           "AND (:deadline IS NULL OR t.deadline = :deadline) " +
+           "AND (:category IS NULL OR t.category.id = :categoryId)") // Use explicit join and category ID
+    List<Task> searchTasks(
+            @Param("name") String name,
+            @Param("description") String description,
+            @Param("deadline") LocalDateTime deadline,
+            @Param("categoryId") Long categoryId);
     
     // Additional query methods can be defined here
 }

@@ -12,7 +12,7 @@ import java.util.List;
  * Controller class for managing TaskCategory entities.
  */
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/categories")
 public class TaskCategoryController {
     private final TaskCategoryService taskCategoryService;
 

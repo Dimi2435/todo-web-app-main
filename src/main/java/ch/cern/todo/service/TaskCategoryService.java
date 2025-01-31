@@ -1,5 +1,6 @@
 package ch.cern.todo.service;
 
+import ch.cern.todo.exception.ResourceNotFoundException;
 import ch.cern.todo.model.TaskCategory;
 import ch.cern.todo.repository.TaskCategoryRepository;
 import org.springframework.stereotype.Service;
@@ -58,12 +59,14 @@ public class TaskCategoryService {
      * @return the updated TaskCategory
      */
     public TaskCategory updateCategory(Long id, TaskCategory category) {
-        if (!taskCategoryRepository.existsById(id)) {
-            throw new IllegalArgumentException("Category not found");
-        }
         validateCategory(category);
-        category.setId(id);
-        return taskCategoryRepository.save(category);
+        return taskCategoryRepository.findById(id)
+                .map(existingCategory -> {
+                    existingCategory.setName(category.getName());
+                    existingCategory.setDescription(category.getDescription());
+                    return taskCategoryRepository.save(existingCategory);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id));
     }
 
     /**
@@ -84,10 +87,10 @@ public class TaskCategoryService {
      * @param category the TaskCategory to validate
      */
     private void validateCategory(TaskCategory category) {
-        if (category.getName() == null || category.getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name must not be empty");
+        if (category.getName() == null || category.getName().isBlank()) { // Use isBlank to check for empty or whitespace-only names
+            throw new IllegalArgumentException("Category name must not be empty or contain only whitespace");
         }
-        // Add more validations as needed
+        // Add more validations as needed (e.g., length restrictions)
     }
 }
 

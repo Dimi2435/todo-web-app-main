@@ -22,24 +22,24 @@ public class Task {
     @Column(name = "DEADLINE", nullable = false)
     private LocalDateTime deadline;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)  // Optimize fetching
     @JoinColumn(name = "CATEGORY_ID", nullable = false)
     private TaskCategory category;
 
-    @ManyToOne
-    @JoinColumn(name = "USER_ID", nullable = false)
-    private User user;
+    // @ManyToOne
+    // @JoinColumn(name = "USER_ID", nullable = false)
+    // private User user;
 
     // Default constructor
     public Task() {}
 
     // Constructor with parameters
-    public Task(String name, String description, LocalDateTime deadline, TaskCategory category, User user) {
+    public Task(String name, String description, LocalDateTime deadline, TaskCategory category) {
         this.name = name;
         this.description = description;
         this.deadline = deadline;
         this.category = category;
-        this.user = user;
+        //this.user = user;
     }
 
     // Getters and Setters
@@ -83,12 +83,27 @@ public class Task {
         this.category = category;
     }
 
-    public User getUser() {
-        return user;
-    }
+    // public User getUser() {
+    //     return user;
+    // }
 
-    public void setUser(User user) {
-        this.user = user;
+    // public void setUser(User user) {
+    //     this.user = user;
+    // }
+
+    // Helper method for combined search (adjust to your specific search needs)
+    public boolean matches(String name, String description, LocalDateTime deadline, TaskCategory category) {
+
+        if (name != null && !this.name.contains(name)) {
+            return false;
+        }
+        if (description != null && !this.description.contains(description)) {
+            return false;
+        }
+        if (deadline != null && !this.deadline.isEqual(deadline)) { // Consider using .isEqual() for date comparison
+            return false;
+        }
+        return category == null || this.category.equals(category); // isEqual vs equals check for TaskCategory depends on your needs. equals checks by id, isEqual compares all fields.
     }
 
     // Override toString, equals, and hashCode for better usability

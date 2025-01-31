@@ -91,9 +91,9 @@ public class TaskCategory {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TaskCategory)) return false;
+        if (o == null || getClass() != o.getClass()) return false; // null check and class comparison
         TaskCategory that = (TaskCategory) o;
-        return id != null && id.equals(that.id);
+        return id != null && id.equals(that.id); // Consider other fields for comparison if necessary. equals compares by ID which should be fine if the entities were fetched from the database
     }
 
     @Override

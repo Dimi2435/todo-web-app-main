@@ -1,6 +1,7 @@
 package ch.cern.todo.service;
 
 import ch.cern.todo.model.Task;
+import ch.cern.todo.model.TaskCategory;
 import ch.cern.todo.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,6 @@ public class TaskService {
      */
     public Task createTask(Task task) {
         validate(task);
-        //task.setUser(SecurityUtils.getCurrentUser());
         return taskRepository.save(task);
     }
 
@@ -43,6 +43,7 @@ public class TaskService {
      * @return the updated Task
      */
     public Task updateTask(Long id, Task task) {
+        validate(task);
         return taskRepository.findById(id)
                 .map(existingTask -> {
                     existingTask.setName(task.getName());
@@ -66,16 +67,22 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    /**
-     * Searches for Tasks based on various criteria.
-     *
-     * @param name        the name of the task
-     * @param description the description of the task
-     * @param deadline    the deadline of the task
-     * @return a list of matching Tasks
-     */
-    public List<Task> searchTasks(String name, String description, LocalDateTime deadline) {
-        return taskRepository.findByNameContainingIgnoreCase(name);
+    // /**
+    //  * Searches for Tasks based on various criteria.
+    //  *
+    //  * @param name        the name of the task
+    //  * @param description the description of the task
+    //  * @param deadline    the deadline of the task
+    //  * @return a list of matching Tasks
+    //  */
+    //  public List<Task> searchTasks(String name, String description, LocalDateTime deadline, TaskCategory category) {
+    //     // Use a more targeted query if available in the JPA repository
+    //     List<Task> tasks = taskRepository.findAll();
+    //     return tasks.stream().filter(task -> task.matches(name, description, deadline, category)).toList();
+    // }
+
+    public List<Task> searchTasks(String name, String description, LocalDateTime deadline, Long categoryId) {
+        return taskRepository.searchTasks(name, description, deadline, categoryId); // Use the repository's search method
     }
 
     /**
