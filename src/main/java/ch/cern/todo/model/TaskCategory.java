@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Entity class representing a TaskCategory in the system.
  */
@@ -21,6 +23,7 @@ public class TaskCategory {
     private String description;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "category")
+    @JsonIgnore //This annotation prevents the tasks collection from being serialized along with TaskCategory objects.
     private Set<Task> tasks = new HashSet<>();
 
     // Default constructor

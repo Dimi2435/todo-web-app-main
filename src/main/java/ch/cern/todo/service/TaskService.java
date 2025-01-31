@@ -1,16 +1,21 @@
 package ch.cern.todo.service;
 
 import ch.cern.todo.model.Task;
+import ch.cern.todo.dto.TaskDTO;
 import ch.cern.todo.model.TaskCategory;
 import ch.cern.todo.repository.TaskRepository;
+
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ch.cern.todo.exception.TodoNotFoundException;
 import ch.cern.todo.exception.ResourceNotFoundException;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service class for managing Task entities.
@@ -18,6 +23,8 @@ import java.util.List;
 @Service
 @Transactional
 public class TaskService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
     private final TaskRepository taskRepository;
 
     public TaskService(TaskRepository taskRepository) {
@@ -68,21 +75,24 @@ public class TaskService {
     }
 
     // /**
-    //  * Searches for Tasks based on various criteria.
-    //  *
-    //  * @param name        the name of the task
-    //  * @param description the description of the task
-    //  * @param deadline    the deadline of the task
-    //  * @return a list of matching Tasks
-    //  */
-    //  public List<Task> searchTasks(String name, String description, LocalDateTime deadline, TaskCategory category) {
-    //     // Use a more targeted query if available in the JPA repository
-    //     List<Task> tasks = taskRepository.findAll();
-    //     return tasks.stream().filter(task -> task.matches(name, description, deadline, category)).toList();
+    // * Searches for Tasks based on various criteria.
+    // *
+    // * @param name the name of the task
+    // * @param description the description of the task
+    // * @param deadline the deadline of the task
+    // * @return a list of matching Tasks
+    // */
+    // public List<Task> searchTasks(String name, String description, LocalDateTime
+    // deadline, TaskCategory category) {
+    // // Use a more targeted query if available in the JPA repository
+    // List<Task> tasks = taskRepository.findAll();
+    // return tasks.stream().filter(task -> task.matches(name, description,
+    // deadline, category)).toList();
     // }
 
     public List<Task> searchTasks(String name, String description, LocalDateTime deadline, Long categoryId) {
-        return taskRepository.searchTasks(name, description, deadline, categoryId); // Use the repository's search method
+        return taskRepository.searchTasks(name, description, deadline, categoryId); // Use the repository's search
+                                                                                    // method
     }
 
     /**
@@ -98,10 +108,20 @@ public class TaskService {
             throw new IllegalArgumentException("Task name cannot exceed 100 characters");
         }
     }
-    
-    public Task getTaskById(Long id) {
+
+    public Optional<TaskDTO> getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found with ID: " + id));
+                .map(task -> {
+                    TaskDTO dto = new TaskDTO();
+                    dto.setId(task.getId());
+                    dto.setName(task.getName());
+                    dto.setDescription(task.getDescription());
+                    dto.setDeadline(task.getDeadline());
+                    if (task.getCategory() != null) {
+                        dto.setCategoryName(task.getCategory().getName());
+                    }
+                    return dto;
+                });
     }
 
     public List<Task> getAllTasks() {
