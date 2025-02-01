@@ -9,7 +9,12 @@ import ch.cern.todo.exception.ResourceNotFoundException;
 import java.util.List;
 
 /**
- * Controller class for managing TaskCategory entities.
+ * @author Dimitrios Milios
+ */
+
+/**
+ * REST controller for managing TaskCategory entities. Handles HTTP requests
+ * related to task categories.
  */
 @RestController
 @RequestMapping("/api/categories")
@@ -21,10 +26,11 @@ public class TaskCategoryController {
     }
 
     /**
-     * Creates a new TaskCategory.
-     *
-     * @param category the TaskCategory to create
-     * @return ResponseEntity containing the created TaskCategory
+     * Creates a new task category.
+     * 
+     * @param category The TaskCategory object to create (sent as JSON in the
+     *                 request body).
+     * @return ResponseEntity containing the created TaskCategory entity.
      */
     @PostMapping
     public ResponseEntity<TaskCategory> createCategory(@RequestBody TaskCategory category) {
@@ -33,11 +39,12 @@ public class TaskCategoryController {
     }
 
     /**
-     * Updates an existing TaskCategory.
-     *
-     * @param id       the ID of the TaskCategory to update
-     * @param category the updated TaskCategory data
-     * @return ResponseEntity containing the updated TaskCategory
+     * Updates an existing task category.
+     * 
+     * @param id       The ID of the TaskCategory to update.
+     * @param category The updated TaskCategory data (sent as JSON in the request
+     *                 body).
+     * @return ResponseEntity containing the updated TaskCategory entity.
      */
     @PutMapping("/{id}")
     public ResponseEntity<TaskCategory> updateCategory(@PathVariable Long id, @RequestBody TaskCategory category) {
@@ -46,10 +53,10 @@ public class TaskCategoryController {
     }
 
     /**
-     * Deletes a TaskCategory by its ID.
-     *
-     * @param id the ID of the TaskCategory to delete
-     * @return ResponseEntity with no content
+     * Deletes a task category by its ID.
+     * 
+     * @param id The ID of the TaskCategory to delete.
+     * @return ResponseEntity with no content (HTTP 204 No Content).
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
@@ -58,9 +65,9 @@ public class TaskCategoryController {
     }
 
     /**
-     * Retrieves all TaskCategories.
-     *
-     * @return ResponseEntity containing a list of all TaskCategories
+     * Retrieves a list of all task categories.
+     * 
+     * @return ResponseEntity containing a list of all TaskCategory entities.
      */
     @GetMapping
     public ResponseEntity<List<TaskCategory>> getAllCategories() {
@@ -69,16 +76,17 @@ public class TaskCategoryController {
     }
 
     /**
-     * Retrieves a TaskCategory by its ID.
-     *
-     * @param id the ID of the TaskCategory
-     * @return ResponseEntity containing the TaskCategory if found, or not found status
+     * Retrieves a task category by its ID.
+     * 
+     * @param id The ID of the TaskCategory to retrieve.
+     * @return ResponseEntity containing the TaskCategory if found; otherwise, a 404
+     *         Not Found response.
      */
     @GetMapping("/{id}")
     public ResponseEntity<TaskCategory> getCategoryById(@PathVariable Long id) {
-    	return taskCategoryService.getCategoryById(id)
-    	        .map(ResponseEntity::ok)
-    	        .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id));
+        return taskCategoryService.getCategoryById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id));
 
     }
-} 
+}

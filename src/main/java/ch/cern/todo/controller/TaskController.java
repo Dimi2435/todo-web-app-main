@@ -7,15 +7,18 @@ import ch.cern.todo.model.User;
 import ch.cern.todo.repository.UserRepository;
 import ch.cern.todo.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Controller class for managing Task entities.
+ * @author Dimitrios Milios
+ */
+
+/**
+ * REST controller for managing Task entities. Handles HTTP requests related to
+ * tasks.
  */
 @RestController
 @RequestMapping("/api/tasks")
@@ -28,9 +31,9 @@ public class TaskController {
     private UserRepository userRepository;
 
     /**
-     * Retrieves all Tasks.
-     *
-     * @return ResponseEntity containing a list of all Tasks
+     * Retrieves a list of all tasks.
+     * 
+     * @return A list of all Task entities.
      */
     @GetMapping
     public List<Task> getAllTasks() {
@@ -38,10 +41,10 @@ public class TaskController {
     }
 
     /**
-     * Creates a new Task.
-     *
-     * @param task the Task to create
-     * @return ResponseEntity containing the created Task
+     * Creates a new task.
+     * 
+     * @param task The Task object to create (sent as JSON in the request body).
+     * @return The created Task entity.
      */
     @PostMapping
     public Task createTask(@RequestBody Task task) {
@@ -49,11 +52,11 @@ public class TaskController {
     }
 
     /**
-     * Updates an existing Task.
-     *
-     * @param id   the ID of the Task to update
-     * @param task the updated Task data
-     * @return ResponseEntity containing the updated Task
+     * Updates an existing task.
+     * 
+     * @param id   The ID of the task to update.
+     * @param task The updated Task data (sent as JSON in the request body).
+     * @return The updated Task entity.
      */
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
@@ -62,10 +65,10 @@ public class TaskController {
     }
 
     /**
-     * Deletes a Task by its ID.
-     *
-     * @param id the ID of the Task to delete
-     * @return ResponseEntity with no content
+     * Deletes a task by its ID.
+     * 
+     * @param id The ID of the task to delete.
+     * @return ResponseEntity with no content (HTTP 204 No Content).
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
@@ -73,6 +76,13 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Retrieves a task by its ID.
+     * 
+     * @param id The ID of the task to retrieve.
+     * @return ResponseEntity containing the TaskDTO if found; otherwise, a 404 Not
+     *         Found response.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id)
@@ -80,11 +90,21 @@ public class TaskController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Searches for tasks based on provided criteria.
+     * 
+     * @param name        The task name (optional).
+     * @param description The task description (optional).
+     * @param deadlineStr The task deadline (yyyy-MM-dd format, optional).
+     * @param categoryId  The ID of the task category (optional).
+     * @param userId      The ID of the task's assigned user (optional).
+     * @return A list of TaskDTOs that match the search criteria.
+     */
     @GetMapping("/search")
-    public ResponseEntity<List<Task>> searchTasks(
+    public ResponseEntity<List<TaskDTO>> searchTasks(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
+            @RequestParam(required = false) String deadlineStr,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long userId) {
 
@@ -95,26 +115,8 @@ public class TaskController {
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         }
 
-        List<Task> tasks = taskService.searchTasks(name, description, deadline, categoryId, userId);
+        List<TaskDTO> tasks = taskService.searchTasks(name, description, deadlineStr, categoryId, userId);
         return ResponseEntity.ok(tasks);
     }
 
-    // // Additional endpoints can be added here
-    // @GetMapping("/search") // Improved search endpoint
-    // public List<Task> searchTasks(
-    // @RequestParam(value = "name", required = false) String name,
-    // @RequestParam(value = "description", required = false) String description,
-    // @RequestParam(value = "deadline", required = false) @DateTimeFormat(iso =
-    // DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
-    // @RequestParam(value = "categoryId", required = false) Long categoryId) { //
-    // Search by category ID
-    // TaskCategory category = categoryId != null ? new TaskCategory() {
-    // {
-    // setId(categoryId);
-    // }
-    // } : null;
-    // return taskService.searchTasks(name, description, deadline, categoryId); //
-    // Use the optimized method in
-    // // TaskService
-    // }
 }

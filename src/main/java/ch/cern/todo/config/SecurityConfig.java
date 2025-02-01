@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,23 +16,36 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
 
 /**
+ * @author Dimitrios Milios
+ */
+
+/**
  * Security configuration class for managing authentication and authorization.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // private final UserService userService;
-
-    // public SecurityConfig(UserService userService) {
-    // this.userService = userService;
-    // }
-
+    /**
+     * Creates a BCryptPasswordEncoder bean for password encoding.
+     * This bean is used to securely hash passwords before storing them in the
+     * database.
+     * 
+     * @return A BCryptPasswordEncoder instance.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Creates an InMemoryUserDetailsManager bean for user authentication.
+     * This method defines two users: "admin" and "user", with their respective
+     * roles and passwords. This is for demonstration only.
+     * In a production system, use a persistent user store.
+     * 
+     * @return An InMemoryUserDetailsManager instance.
+     */
     @Bean
     public UserDetailsService userDetailsService() {
         List<UserDetails> users = List.of(
@@ -49,52 +60,49 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(users);
     }
 
-    // @Bean
-    // public UserDetailsService userDetailsService(UserRepository userRepository) {
-    // JdbcUserDetailsManager manager = new JdbcUserDetailsManager();
-    // manager.setDataSource(userRepository.getJpaContext().getEntityManagerFactory()
-    // .getDataSource());
-    // return manager;
-    // }
-
+    /**
+     * Configures the Spring Security filter chain for web security.
+     * This method defines authorization rules for different endpoints, including:
+     * - Permitting access to Swagger and H2 Console
+     * - Requiring ADMIN role for access to /api/tasks, /api/users, and
+     * /api/categories endpoints.
+     * - Enabling HTTP Basic authentication
+     * - Disabling CSRF protection for specific endpoints for testing purposes
+     * (remove or adjust this in production).
+     * 
+     * @param http The HttpSecurity object to configure.
+     * @return A SecurityFilterChain instance.
+     * @throws Exception if there is an error during configuration.
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
-    Exception {
-    http
-    .authorizeRequests()
-    .requestMatchers("/v3/api-docs/**").permitAll()
-    .requestMatchers("/swagger-ui.html").permitAll()
-    .requestMatchers("/swagger-ui/**").permitAll()
-    .requestMatchers("/h2-console/**").permitAll()
-    //.requestMatchers("/api/tasks/**").authenticated()
-    .requestMatchers("/api/tasks/**").hasRole("ADMIN")
-    .requestMatchers("/api/users/**").hasRole("ADMIN")
-    // .requestMatchers("/api/users/**").authenticated()
-    // .requestMatchers("/api/roles/**").authenticated()
-    .requestMatchers("/api/categories/**").hasRole("ADMIN");
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui.html").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                // .requestMatchers("/api/tasks/**").authenticated()
+                .requestMatchers("/api/tasks/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                // .requestMatchers("/api/users/**").authenticated()
+                // .requestMatchers("/api/roles/**").authenticated()
+                .requestMatchers("/api/categories/**").hasRole("ADMIN");
 
-    http.headers().frameOptions().disable();
+        http.headers().frameOptions().disable();
 
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));    
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/tasks/**"));
-    http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/categories/**"));
-    //http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/roles**"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/users/**"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/tasks/**"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/categories/**"));
+        // http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/roles**"));
 
+        http.formLogin()
+                .permitAll();
 
-    http.formLogin()
-    .permitAll();
+        http.httpBasic();
 
-    http.httpBasic();
-
-    return http.build();
+        return http.build();
     }
-
-    // @Bean
-    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    //     http.authorizeRequests().antMatchers("/h2-console/**").permitAll()
-    //     .and().csrf().ignoringAntMatchers("/h2-console/**")
-    //     .and().headers().frameOptions().sameOrigin();
-    // }
 
 }
